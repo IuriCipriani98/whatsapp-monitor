@@ -15,20 +15,6 @@ Dashboard pessoal para monitorar mensagens diretas e menções em grupos do What
 
 ---
 
-## 
-
-
-|--------|--------------|
-| **Inbox** | Última mensagem de cada conversa direta |
-| **Menções** | Mensagens de grupos onde te mencionaram |
-| **Tasks** | Board Trello  |
-
-- **Arrastar** um card do Inbox ou Menções para Tasks abre um modal para definir título, descrição e prioridade
-- **Tasks** têm 3 status: A fazer → Em andamento → Feito
-- **Itens excluídos** não voltam mesmo após varredura
-- **Dados salvos** em `
-
----
 
 ```js
 
