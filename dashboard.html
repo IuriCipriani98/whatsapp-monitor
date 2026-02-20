@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0f11;--surf:#15171a;--card:#1b1d22;--border:#252830;--acc:#b8c4a8;--t1:#e2e4e0;--t2:#6b7280;--red:#d97b5f;--blue:#7b9fd9;--gold:#c4a86e;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+header{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--border);background:var(--surf);flex-shrink:0;}
+.logo{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--acc);}
+.hright{display:flex;align-items:center;gap:8px;}
+.pill{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:10px;letter-spacing:.6px;text-transform:uppercase;border:1px solid var(--border);color:var(--t2);}
+.pill.on{border-color:var(--acc);color:var(--acc);}
+.dot{width:4px;height:4px;border-radius:50%;background:currentColor;}
+.on .dot{animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hbtn{background:none;border:1px solid var(--border);color:var(--t2);font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;border-radius:5px;cursor:pointer;transition:all .15s;}
+.hbtn:hover{border-color:var(--acc);color:var(--acc);}
+
+.board{flex:1;display:grid;grid-template-columns:1fr 1fr 1.4fr;overflow:hidden;}
+.col{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;}
+.col:last-child{border-right:none;}
+.col-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surf);flex-shrink:0;}
+.col-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;}
+.c1 .col-label{color:var(--blue);}
+.c2 .col-label{color:var(--gold);}
+.c3 .col-label{color:var(--acc);}
+.col-n{font-size:10px;color:var(--t2);}
+
+.stabs{display:flex;border-bottom:1px solid var(--border);background:var(--surf);flex-shrink:0;}
+.stab{flex:1;padding:7px 2px;text-align:center;font-size:10px;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.3px;}
+.stab.on{color:var(--acc);border-color:var(--acc);}
+
+.list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:5px;}
+.list::-webkit-scrollbar{width:3px;}
+.list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.list.over{background:rgba(184,196,168,.05);outline:1px dashed var(--acc);outline-offset:-4px;border-radius:6px;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:10px;transition:border-color .15s;}
+.card:hover{border-color:#383c45;}
+.card[draggable=true]{cursor:grab;}
+.card[draggable=true]:active{cursor:grabbing;}
+.card.ghost{opacity:.35;}
+
+.cmeta{display:flex;align-items:center;gap:5px;margin-bottom:5px;flex-wrap:wrap;}
+.tag{font-size:9px;letter-spacing:.4px;text-transform:uppercase;padding:2px 6px;border-radius:3px;font-weight:500;}
+.tag-d{background:#1a2530;color:var(--blue);}
+.tag-g{background:#2a2010;color:var(--gold);}
+.ts{font-size:10px;color:var(--t2);margin-left:auto;}
+.cname{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;margin-bottom:3px;}
+.cmsg{font-size:11px;color:var(--t2);line-height:1.5;word-break:break-word;margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.acts{display:flex;gap:4px;}
+.ab{background:none;border:1px solid var(--border);color:var(--t2);font-family:'DM Mono',monospace;font-size:10px;padding:2px 7px;border-radius:4px;cursor:pointer;transition:all .15s;}
+.ab:hover{border-color:#4a4f5a;color:var(--t1);}
+.ab.acc{border-color:var(--acc);color:var(--acc);}
+.ab.acc:hover{background:var(--acc);color:var(--bg);}
+.ab.del{border-color:#3a2020;color:#c47a7a;}
+.ab.del:hover{background:#3a2020;}
+
+/* task card */
+.tk-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;margin-bottom:4px;}
+.tk-desc{font-size:11px;color:var(--t2);line-height:1.5;margin-bottom:6px;}
+.tk-ref{font-size:10px;color:var(--t2);border-left:2px solid var(--border);padding-left:7px;margin-bottom:7px;line-height:1.5;}
+.tk-meta{display:flex;align-items:center;gap:6px;margin-bottom:7px;flex-wrap:wrap;}
+.sbadge{font-size:9px;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.4px;}
+.s-todo{background:#1a1a2a;color:#8888cc;}
+.s-doing{background:#1a2a1a;color:#88cc88;}
+.s-done{background:#2a2a2a;color:var(--t2);}
+.pbadge{font-size:9px;}
+.p-high{color:var(--red);}
+.p-medium{color:var(--acc);}
+.p-low{color:var(--t2);}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;display:none;align-items:center;justify-content:center;}
+.ov.show{display:flex;}
+.modal{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:22px;width:440px;max-width:92vw;}
+.mtitle{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--acc);margin-bottom:16px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:10px;color:var(--t2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;}
+.field input,.field textarea,.field select{width:100%;background:var(--card);border:1px solid var(--border);color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:7px 10px;border-radius:6px;outline:none;resize:vertical;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--acc);}
+.field textarea{min-height:65px;}
+.mref{font-size:11px;color:var(--t2);background:var(--card);padding:8px 10px;border-radius:5px;margin-bottom:14px;line-height:1.5;word-break:break-word;border-left:2px solid var(--border);}
+.macts{display:flex;gap:8px;justify-content:flex-end;}
+.mbtn{background:none;border:1px solid var(--border);color:var(--t2);font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.mbtn:hover{color:var(--t1);}
+.mbtn.ok{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:600;}
+
+.empty{color:var(--t2);font-size:11px;text-align:center;padding:28px 12px;line-height:2;}
+.toast{position:fixed;bottom:16px;right:16px;background:var(--acc);color:var(--bg);font-family:'DM Mono',monospace;font-size:11px;padding:7px 14px;border-radius:6px;opacity:0;transform:translateY(5px);transition:all .2s;pointer-events:none;z-index:99;}
+.toast.show{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⬡ Monitor</div>
+  <div class="hright">
+    <span id="last-scan" style="font-size:10px;color:var(--t2)"></span>
+    <button class="hbtn" onclick="scan()">↻ varrer</button>
+    <div class="pill" id="pill"><div class="dot"></div><span id="ptxt">conectando</span></div>
+  </div>
+</header>
+
+<div class="board">
+  <!-- COL 1: INBOX -->
+  <div class="col c1">
+    <div class="col-head">
+      <span class="col-label">Inbox</span>
+      <span class="col-n" id="n1">0</span>
+    </div>
+    <div class="list" id="l1"
+      ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropIgnore(event)">
+    </div>
+  </div>
+
+  <!-- COL 2: MENÇÕES -->
+  <div class="col c2">
+    <div class="col-head">
+      <span class="col-label">Menções</span>
+      <span class="col-n" id="n2">0</span>
+    </div>
+    <div class="list" id="l2"
+      ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropIgnore(event)">
+    </div>
+  </div>
+
+  <!-- COL 3: TASKS (Trello) -->
+  <div class="col c3">
+    <div class="col-head">
+      <span class="col-label">Tasks</span>
+      <span class="col-n" id="n3">0 pendentes</span>
+    </div>
+    <div class="stabs">
+      <div class="stab on" onclick="setTab('all',this)">Todas</div>
+      <div class="stab" onclick="setTab('todo',this)">A fazer</div>
+      <div class="stab" onclick="setTab('doing',this)">Andamento</div>
+      <div class="stab" onclick="setTab('done',this)">Feito</div>
+    </div>
+    <div class="list" id="l3"
+      ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropOnTasks(event)">
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <div class="mtitle" id="m-mode">Nova Task</div>
+    <div class="field"><label>Título</label><input id="m-title" placeholder="O que precisa ser feito?"></div>
+    <div class="field"><label>Descrição</label><textarea id="m-desc" placeholder="Detalhes, contexto..."></textarea></div>
+    <div class="field"><label>Prioridade</label>
+      <select id="m-prio"><option value="high">Alta</option><option value="medium" selected>Média</option><option value="low">Baixa</option></select>
+    </div>
+    <div id="m-ref-wrap" style="display:none;margin-bottom:14px;">
+      <div style="font-size:10px;color:var(--t2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;">Mensagem de origem</div>
+      <div class="mref" id="m-ref"></div>
+    </div>
+    <div class="macts">
+      <button class="mbtn" onclick="closeModal()">cancelar</button>
+      <button class="mbtn ok" id="m-confirm" onclick="confirmTask()">criar task →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:5000';
+let inbox=[], mentions=[], tasks=[];
+let taskTab = 'all';
+let drag = null; // {type:'inbox'|'mention', id}
+let pending = null; // dados do modal
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const [ib,mn,tk] = await Promise.all([
+      fetch(`${API}/api/inbox`).then(r=>r.json()),
+      fetch(`${API}/api/mentions`).then(r=>r.json()),
+      fetch(`${API}/api/tasks`).then(r=>r.json()),
+    ]);
+    inbox=ib; mentions=mn; tasks=tk;
+    render();
+  } catch {}
+}
+
+async function loadStatus() {
+  try {
+    const s = await fetch(`${API}/api/status`).then(r=>r.json());
+    document.getElementById('pill').className = s.connected?'pill on':'pill';
+    document.getElementById('ptxt').textContent = s.connected?'monitorando':'desconectado';
+    if (s.last_scan_fmt) document.getElementById('last-scan').textContent = `última ${s.last_scan_fmt}`;
+  } catch {}
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() { renderInbox(); renderMentions(); renderTasks(); }
+
+function renderInbox() {
+  const el = document.getElementById('l1');
+  document.getElementById('n1').textContent = inbox.length;
+  if (!inbox.length) { el.innerHTML=`<div class="empty">Nenhuma mensagem direta</div>`; return; }
+  el.innerHTML = inbox.map(i => `
+    <div class="card" draggable="true" id="ib_${esc(i.chatId)}"
+      ondragstart="onDragStart(event,'inbox','${esc(i.chatId)}')">
+      <div class="cmeta"><span class="tag tag-d">direta</span><span class="ts">${i.timestamp||''}</span></div>
+      <div class="cname">${esc(i.name)}</div>
+      <div class="cmsg">${esc(i.message)}</div>
+      <div class="acts">
+        <button class="ab acc" onclick="openModal('inbox','${esc(i.chatId)}')">→ task</button>
+        <button class="ab del" onclick="delInbox('${esc(i.chatId)}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderMentions() {
+  const el = document.getElementById('l2');
+  document.getElementById('n2').textContent = mentions.length;
+  if (!mentions.length) { el.innerHTML=`<div class="empty">Nenhuma menção<br><span style="font-size:10px;opacity:.6">Aparece quando te mencionam<br>num grupo</span></div>`; return; }
+  el.innerHTML = mentions.map(m => `
+    <div class="card" draggable="true" id="mn_${m.id}"
+      ondragstart="onDragStart(event,'mention','${m.id}')">
+      <div class="cmeta"><span class="tag tag-g">grupo</span><span class="ts">${m.timestamp||''}</span></div>
+      <div class="cname">${esc(m.group)}</div>
+      <div class="cmsg">${esc(m.message)}</div>
+      <div class="acts">
+        <button class="ab acc" onclick="openModal('mention','${m.id}')">→ task</button>
+        <button class="ab del" onclick="delMention('${m.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderTasks() {
+  const el = document.getElementById('l3');
+  const filtered = taskTab==='all' ? tasks : tasks.filter(t=>t.status===taskTab);
+  const pend = tasks.filter(t=>t.status!=='done').length;
+  document.getElementById('n3').textContent = `${pend} pendentes`;
+  if (!filtered.length) { el.innerHTML=`<div class="empty">Arraste uma mensagem ou menção<br>para cá para criar uma task</div>`; return; }
+  const sLbl = {todo:'a fazer',doing:'em andamento',done:'feito'};
+  const sCls = {todo:'s-todo',doing:'s-doing',done:'s-done'};
+  el.innerHTML = filtered.map(t => `
+    <div class="card" id="tk_${t.id}">
+      <div class="tk-title">${esc(t.title)}</div>
+      ${t.description?`<div class="tk-desc">${esc(t.description)}</div>`:''}
+      ${t.sourceMsg?`<div class="tk-ref">${esc(t.sourceMsg.slice(0,100))}${t.sourceMsg.length>100?'…':''}</div>`:''}
+      <div class="tk-meta">
+        <span class="sbadge ${sCls[t.status]||'s-todo'}">${sLbl[t.status]||'a fazer'}</span>
+        <span class="pbadge p-${t.priority||'medium'}">${t.priority==='high'?'● urgente':t.priority==='low'?'● baixa':'● média'}</span>
+        ${t.source?`<span style="font-size:10px;color:var(--t2)">${esc(t.source)}</span>`:''}
+      </div>
+      <div class="acts" style="flex-wrap:wrap;">
+        ${t.status!=='todo'  ?`<button class="ab" onclick="move('${t.id}','todo')">a fazer</button>`:''}
+        ${t.status!=='doing' ?`<button class="ab" onclick="move('${t.id}','doing')">▶ andamento</button>`:''}
+        ${t.status!=='done'  ?`<button class="ab acc" onclick="move('${t.id}','done')">✓ feito</button>`:''}
+        <button class="ab" onclick="editTask('${t.id}')">✎</button>
+        <button class="ab del" onclick="delTask('${t.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── TAB ───────────────────────────────────────────────────────────────────────
+function setTab(tab, btn) {
+  taskTab = tab;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderTasks();
+}
+
+// ── DRAG ──────────────────────────────────────────────────────────────────────
+function onDragStart(e, type, id) {
+  drag = {type, id};
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(()=>{
+    const el = document.getElementById(type==='inbox'?`ib_${id}`:`mn_${id}`);
+    if (el) el.classList.add('ghost');
+  },0);
+}
+function dragOver(e)  { e.preventDefault(); e.currentTarget.classList.add('over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('over'); }
+function dropIgnore(e){ e.currentTarget.classList.remove('over'); }
+function dropOnTasks(e) {
+  e.currentTarget.classList.remove('over');
+  if (!drag) return;
+  openModal(drag.type, drag.id);
+  drag = null;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(type, id, editMode) {
+  pending = {type, id, editMode};
+  let name='', msg='';
+  if (type==='inbox')   { const i=inbox.find(x=>x.chatId===id);   if(i){name=i.name;msg=i.message;} }
+  if (type==='mention') { const m=mentions.find(x=>x.id===id);     if(m){name=m.group;msg=m.message;} }
+
+  document.getElementById('m-mode').textContent = 'Nova Task';
+  document.getElementById('m-title').value = name ? `Responder ${name}` : '';
+  document.getElementById('m-desc').value  = '';
+  document.getElementById('m-prio').value  = 'medium';
+  document.getElementById('m-confirm').onclick = confirmTask;
+  document.getElementById('m-confirm').textContent = 'criar task →';
+
+  const rw = document.getElementById('m-ref-wrap');
+  if (msg) { rw.style.display='block'; document.getElementById('m-ref').textContent=msg.slice(0,200); }
+  else rw.style.display='none';
+
+  // Remove ghost
+  if (type==='inbox')   { const el=document.getElementById(`ib_${id}`);  if(el) el.classList.remove('ghost'); }
+  if (type==='mention') { const el=document.getElementById(`mn_${id}`); if(el) el.classList.remove('ghost'); }
+
+  document.getElementById('ov').classList.add('show');
+  setTimeout(()=>document.getElementById('m-title').focus(),80);
+}
+
+function closeModal() {
+  document.getElementById('ov').classList.remove('show');
+  pending = null;
+}
+
+async function confirmTask() {
+  const title = document.getElementById('m-title').value.trim();
+  if (!title) { document.getElementById('m-title').focus(); return; }
+  const desc  = document.getElementById('m-desc').value.trim();
+  const prio  = document.getElementById('m-prio').value;
+  const {type, id} = pending||{};
+
+  let source='', sourceMsg='';
+  if (type==='inbox')   { const i=inbox.find(x=>x.chatId===id);  if(i){source=i.name;sourceMsg=i.message;} }
+  if (type==='mention') { const m=mentions.find(x=>x.id===id);    if(m){source=m.group;sourceMsg=m.message;} }
+
+  // Cria task
+  const res = await fetch(`${API}/api/tasks`,{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title,description:desc,priority:prio,source,sourceMsg,status:'todo'})});
+  const t = await res.json();
+  tasks.push(t);
+
+  // Remove item de origem — DELETE marca como deletado no servidor (não volta)
+  if (type==='inbox' && id) {
+    await fetch(`${API}/api/inbox/${encodeURIComponent(id)}`,{method:'DELETE'});
+    inbox = inbox.filter(i=>i.chatId!==id);
+  }
+  if (type==='mention' && id) {
+    await fetch(`${API}/api/mentions/${id}`,{method:'DELETE'});
+    mentions = mentions.filter(m=>m.id!==id);
+  }
+
+  closeModal();
+  render();
+  toast('✓ task criada');
+}
+
+// ── AÇÕES ─────────────────────────────────────────────────────────────────────
+async function delInbox(chatId) {
+  await fetch(`${API}/api/inbox/${encodeURIComponent(chatId)}`,{method:'DELETE'});
+  inbox = inbox.filter(i=>i.chatId!==chatId);
+  renderInbox(); toast('removido');
+}
+async function delMention(id) {
+  await fetch(`${API}/api/mentions/${id}`,{method:'DELETE'});
+  mentions = mentions.filter(m=>m.id!==id);
+  renderMentions(); toast('removido');
+}
+async function delTask(id) {
+  await fetch(`${API}/api/tasks/${id}`,{method:'DELETE'});
+  tasks = tasks.filter(t=>t.id!==id);
+  renderTasks(); toast('removido');
+}
+async function move(id, status) {
+  const t = tasks.find(x=>x.id===id); if(!t) return;
+  t.status = status;
+  await fetch(`${API}/api/tasks/${id}`,{method:'PATCH',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+  renderTasks();
+  toast(status==='done'?'✓ feito':status==='doing'?'▶ em andamento':'← a fazer');
+}
+function editTask(id) {
+  const t = tasks.find(x=>x.id===id); if(!t) return;
+  pending = {type:'edit', id};
+  document.getElementById('m-mode').textContent = 'Editar Task';
+  document.getElementById('m-title').value = t.title;
+  document.getElementById('m-desc').value  = t.description||'';
+  document.getElementById('m-prio').value  = t.priority||'medium';
+  const rw = document.getElementById('m-ref-wrap');
+  if (t.sourceMsg) { rw.style.display='block'; document.getElementById('m-ref').textContent=t.sourceMsg.slice(0,200); }
+  else rw.style.display='none';
+  document.getElementById('m-confirm').textContent = 'salvar →';
+  document.getElementById('m-confirm').onclick = async () => {
+    const title = document.getElementById('m-title').value.trim(); if(!title) return;
+    Object.assign(t,{title, description:document.getElementById('m-desc').value.trim(), priority:document.getElementById('m-prio').value});
+    await fetch(`${API}/api/tasks/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:t.title,description:t.description,priority:t.priority})});
+    closeModal(); renderTasks(); toast('task atualizada');
+  };
+  document.getElementById('ov').classList.add('show');
+  setTimeout(()=>document.getElementById('m-title').focus(),80);
+}
+
+async function scan() {
+  try { await fetch(`${API}/api/scan`,{method:'POST'}); toast('varrendo...'); setTimeout(loadAll,4000); }
+  catch { toast('monitor offline'); }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+document.addEventListener('dragend',()=>{ document.querySelectorAll('.ghost').forEach(el=>el.classList.remove('ghost')); drag=null; });
+
+loadAll(); loadStatus();
+setInterval(loadAll,   20000);
+setInterval(loadStatus, 8000);
+</script>
+</body>
+</html>
