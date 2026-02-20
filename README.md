@@ -2,18 +2,17 @@
 
 Dashboard pessoal para monitorar mensagens diretas e menções em grupos do WhatsApp, com board de task com o intuito de aumentar a produtividade.
 
----
 
----
 
 ## Instalação
+
 1- No arquivo monitor.js alterar os campos SEU_CELULAR, SEU_NOMES ou APELIDOS
 1. Rodar `INSTALAR.bat` 
 2. Rodar `INICIAR.bat`
 3. Escanear o QRCode
 4. Abrir o `dashboard.html` no navegador
 
----
+
 
 
 ```js
